@@ -43,12 +43,25 @@ module ContentHelper
     end.join("&nbsp;<strong>|</strong>&nbsp;")
   end
 
-  def category_links(article)
-    _("Posted in") + " " + article.categories.map { |c| link_to h(c.name), category_url(c), :rel => 'tag'}.join(", ")
-  end
 
-  def tag_links(article)
-    _("Tags") + " " + article.tags.map { |tag| link_to tag.display_name, tag.permalink_url, :rel => "tag"}.sort.join(", ")
+  # returns a string of links to categories separated by a comma. Takes an optional options hash.
+  # options[:prefix] allows you to specify the prefix before the categories. The default is "Posted in"
+  #
+  # category_links(article, :prefix => "Categories:")  => Categories: <a..>Cat1</a>, <a..>Cat2</a>...
+  # 
+  def category_links(article, options={})
+    prefix= options[:prefix] || "Posted in"
+    (prefix.blank? ? "" :  _(prefix) + " " ) + article.categories.map { |c| link_to h(c.name), category_url(c), :rel => 'tag'}.join(", ")
+  end
+  
+  # returns a string of links to tags separated by a comma. Takes an optional options hash.
+  # options[:prefix] allows you to specify the prefix before the tags. The default is "Tags"
+  #
+  # tag_links(article, :prefix => "Tags:")  => Tags: <a..>Tag1</a>, <a..>Tag2</a>...
+  # 
+  def tag_links(article, options={})
+    prefix = options[:prefix] || "Tags"
+    (prefix.blank? ? "": _(prefix) + " ") + article.tags.map { |tag| link_to tag.display_name, tag.permalink_url, :rel => "tag"}.sort.join(", ")
   end
 
   def next_link(article)
