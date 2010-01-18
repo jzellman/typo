@@ -1,9 +1,4 @@
-require File.dirname(__FILE__) + '/../../../test/test_helper'
 require File.dirname(__FILE__) + '/../../spec_helper'
-require 'admin/pages_controller'
-
-# Re-raise errors caught by the controller.
-class Admin::PagesController; def rescue_action(e) raise e end; end
 
 describe Admin::PagesController do
   before do
@@ -30,7 +25,7 @@ describe Admin::PagesController do
 
   end
 
-  def test_show
+  it "test_show" do
     get :show, :id => contents(:first_page).id
     assert_response :success
     assert_template "show"
@@ -38,7 +33,7 @@ describe Admin::PagesController do
     assert_equal contents(:first_page), assigns(:page)
   end
 
-  def test_new
+  it "test_new" do
     get :new
     assert_response :success
     assert_template "new"
@@ -60,7 +55,7 @@ describe Admin::PagesController do
     #assert_equal "Page was successfully created.", flash[:notice]
   end
 
-  def test_edit
+  it "test_edit" do
     get :edit, :id => contents(:markdown_page).id
     assert_response :success
     assert_template "edit"
@@ -77,7 +72,7 @@ describe Admin::PagesController do
     #assert_equal "Page was successfully updated.", flash[:notice]
   end
 
-  def test_destroy
+  it "test_destroy" do
     post :destroy, :id => contents(:another_page).id
     assert_response :redirect, :action => "list"
     assert_raise(ActiveRecord::RecordNotFound) { Page.find(contents(:another_page).id) }

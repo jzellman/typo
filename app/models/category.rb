@@ -7,11 +7,8 @@ class Category < ActiveRecord::Base
     :through => :categorizations,
     :order   => "published_at DESC, created_at DESC"
 
-  has_many :published_articles,
-    :through    => :categorizations,
-    :class_name => 'Article',
-    :conditions => { :published => true },
-    :order      => "published_at DESC"
+
+  default_scope :order => 'position ASC'
 
   module Finders
     def find_all_with_article_counters(maxcount=nil)
@@ -25,12 +22,6 @@ class Category < ActiveRecord::Base
       GROUP BY categories.id, categories.name, categories.position, categories.permalink
       ORDER BY position
       }, true]).each {|item| item.article_counter = item.article_counter.to_i }
-    end
-
-    def find(*args)
-      with_scope :find => {:order => 'position ASC'} do
-        super
-      end
     end
 
     def find_by_permalink(permalink, options = {})
@@ -64,7 +55,7 @@ class Category < ActiveRecord::Base
   end
 
   def published_articles
-    self.articles.find_already_published
+    articles.already_published
   end
 
   def display_name

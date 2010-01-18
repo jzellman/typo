@@ -1,9 +1,4 @@
-require File.dirname(__FILE__) + '/../../../test/test_helper'
 require File.dirname(__FILE__) + '/../../spec_helper'
-require 'admin/users_controller'
-
-# Re-raise errors caught by the controller.
-class Admin::UsersController; def rescue_action(e) raise e end; end
 
 describe Admin::UsersController, "rough port of the old functional test" do
   integrate_views
@@ -14,13 +9,13 @@ describe Admin::UsersController, "rough port of the old functional test" do
       request.session = { :user => users(:tobi).id }
     end
 
-    def test_index
+    it "test_index" do
       get :index
       assert_template 'index'
       assert_template_has 'users'
     end
 
-    def test_new
+    it "test_new" do
       get :new
       assert_template 'new'
 
@@ -48,7 +43,7 @@ describe Admin::UsersController, "rough port of the old functional test" do
           end
 
           it 'should assigns tobi user' do
-            assert_valid assigns(:user)
+            assert assigns(:user).valid?
             assigns(:user).should == users(:tobi)
           end
         end
@@ -69,11 +64,11 @@ describe Admin::UsersController, "rough port of the old functional test" do
       end
     end
 
-    def test_destroy
+    it "test_destroy" do
       user_count = User.count
       get :destroy, :id => users(:bob).id
       assert_template 'destroy'
-      assert_valid assigns(:user)
+      assert assigns(:user).valid?
 
       assert_equal user_count, User.count
       post :destroy, :id => users(:bob).id

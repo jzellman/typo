@@ -1,6 +1,7 @@
 class AccountsController < ApplicationController
 
   before_filter :verify_users, :only => [:login]
+  filter_parameter_logging "password"
 
   def login 
     if session[:user_id] && session[:user_id] == self.current_user.id
@@ -11,7 +12,7 @@ class AccountsController < ApplicationController
     @page_title = "#{this_blog.blog_name} - #{_('login')}"
     case request.method
       when :post
-      self.current_user = User.authenticate(params[:user_login], params[:user_password])
+      self.current_user = User.authenticate(params[:user][:login], params[:user][:password])
             
       if logged_in?
         session[:user_id] = self.current_user.id
@@ -26,11 +27,12 @@ class AccountsController < ApplicationController
         end
         add_to_cookies(:typo_user_profile, self.current_user.profile.label, '/')
 
+        self.current_user.update_connection_time
         flash[:notice]  = _("Login successful")
         redirect_back_or_default :controller => "admin/dashboard", :action => "index"
       else
         flash.now[:error]  = _("Login unsuccessful")
-        @login = params[:user_login]
+        @login = params[:user][:login]
       end
     end
   end
@@ -51,7 +53,15 @@ class AccountsController < ApplicationController
       if @user.save
         self.current_user = @user
         session[:user_id] = @user.id
-        redirect_to :controller => "accounts", :action => "confirm", :password => params[:password]
+        
+        # Crappy hack : by default, the auto generated post is user_id less and it makes Typo crash
+        if User.count == 1
+          art = Article.find(:first)
+          art.user_id = @user.id
+          art.save
+        end
+        
+        redirect_to :controller => "accounts", :action => "confirm"
         return
       end
     end

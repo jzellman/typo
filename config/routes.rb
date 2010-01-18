@@ -15,7 +15,8 @@ ActionController::Routing::Routes.draw do |map|
   # this improves caches_page because now apache and webrick will send out the
   # cached feeds with the correct xml mime type.
 
-  map.xml 'articles.:format', :controller => 'articles', :action => 'index', :format => /rss|atom/
+  map.rss 'articles.rss', :controller => 'articles', :action => 'index', :format => 'rss'
+  map.atom 'articles.atom', :controller => 'articles', :action => 'index', :format => 'atom'
   
   map.with_options :controller => 'xml', :path_prefix => 'xml' do |controller|
     controller.xml 'itunes/feed.xml', :action => 'itunes'
@@ -37,8 +38,8 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :trackbacks
 
   map.live_search_articles '/live_search/', :controller => "articles", :action => "live_search"
-  map.connect '/search/:q.:format', :controller => "articles", :action => "search"
-  map.connect '/search/', :controller => "articles", :action => "search"
+  map.search '/search/:q.:format', :controller => "articles", :action => "search"
+  map.search_base '/search/', :controller => "articles", :action => "search"
   map.connect '/archives/', :controller => "articles", :action => "archives"
 
   # I thinks it's useless. More investigating
@@ -84,6 +85,8 @@ ActionController::Routing::Routes.draw do |map|
       :controller => 'textfilter', :action => 'public_action'
   end
 
+  map.connect 'previews/:id', :controller => 'articles', :action => 'preview'
+
   # Work around the Bad URI bug
   %w{ accounts backend files sidebar textfilter xml }.each do |i|
     map.connect "#{i}", :controller => "#{i}", :action => 'index'
@@ -97,7 +100,7 @@ ActionController::Routing::Routes.draw do |map|
     map.connect "/admin/#{i}/:action/:id", :controller => "admin/#{i}", :action => nil, :id => nil
   end
 
-  map.connect '*from', :controller => 'redirect', :action => 'redirect'
+  map.connect '*from', :controller => 'articles', :action => 'redirect'
 
   map.connect(':controller/:action/:id') do |default_route|
     class << default_route

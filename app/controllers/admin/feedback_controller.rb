@@ -97,7 +97,7 @@ class Admin::FeedbackController < Admin::BaseController
   def preview
     feedback = Feedback.find(params[:id])
     render(:update) do |page|
-      page.replace_html("feedback_#{feedback.id}", feedback.body)
+      page.replace_html("feedback_#{feedback.id}", h(feedback.body))
     end
     
   end
@@ -107,7 +107,8 @@ class Admin::FeedbackController < Admin::BaseController
     items = Feedback.find(ids)
     @unexpired = true
 
-    case params[:bulkop]
+    bulkop = params[:bulkop_top].empty? ? params[:bulkop_bottom] : params[:bulkop_top]
+    case bulkop
     when 'Delete Checked Items'
       count = 0
       ids.each do |id|
@@ -142,7 +143,7 @@ class Admin::FeedbackController < Admin::BaseController
 
   def delete_all_spam
     if request.post?
-      Feedback.delete_all(['state in (?,?)', "presumed_spam", "spam"])
+      Feedback.delete_all(['state in (?,?)', 'presumed_spam', 'spam'])
       flash[:notice] = _("All spam have been deleted")
     end
   end

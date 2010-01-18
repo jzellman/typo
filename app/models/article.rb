@@ -41,13 +41,20 @@ class Article < Content
   has_many :categories, \
     :through => :categorizations, \
     :include => :categorizations, \
+    :select => 'categories.*', \
     :uniq => true, \
-    :order => 'categorizations.is_primary DESC, categories.position '
+    :order => 'categorizations.is_primary DESC'
 
   has_and_belongs_to_many :tags, :foreign_key => 'article_id'
 
   named_scope :category, lambda {|category_id| {:conditions => ['categorizations.category_id = ?', category_id], :include => 'categorizations'}}
+  named_scope :drafts, :conditions => ['state = ?', 'draft']
+  named_scope :without_parent, {:conditions => {:parent_id => nil}}
+  named_scope :child_of, lambda { |article_id| {:conditions => {:parent_id => article_id}} }
 
+  def has_child?
+    Article.exists?({:parent_id => self.id})
+  end
 
   belongs_to :user
 
@@ -70,6 +77,14 @@ class Article < Content
   include Article::States
 
   class << self
+    def last_draft(article_id)
+      article = Article.find(article_id)
+      while article.has_child?
+        article = Article.child_of(article.id).first
+      end
+      article
+    end
+
     def published_articles
       find(:conditions => { :published => true }, :order => 'published_at DESC')
     end
@@ -141,7 +156,7 @@ class Article < Content
     end
   end
 
-  def permalink_url(anchor=nil, only_path=true)
+  def permalink_url(anchor=nil, only_path=false)
     @cached_permalink_url ||= {}
 
     @cached_permalink_url["#{anchor}#{only_path}"] ||= \
@@ -166,7 +181,7 @@ class Article < Content
   end
 
   def trackback_url
-    blog.url_for("trackbacks?article_id=#{self.id}", :only_path => true)
+    blog.url_for("trackbacks?article_id=#{self.id}", :only_path => false)
   end
 
   def permalink_by_format(format=nil)
@@ -182,11 +197,11 @@ class Article < Content
   end
 
   def comment_url
-    blog.url_for("comments?article_id=#{self.id}", :only_path => true)
+    blog.url_for("comments?article_id=#{self.id}", :only_path => false)
   end
 
   def preview_comment_url
-    blog.url_for("comments/preview?article_id=#{self.id}", :only_path => true)
+    blog.url_for("comments/preview?article_id=#{self.id}", :only_path => false)
   end
 
   def feed_url(format = :rss20)
@@ -204,9 +219,9 @@ class Article < Content
 
   def html_urls
     urls = Array.new
-    html.gsub(/<a [^>]*>/) do |tag|
-      if(tag =~ /href="([^"]+)"/)
-        urls.push($1)
+    html.gsub(/<a\s+[^>]*>/) do |tag|
+      if(tag =~ /\bhref=(["']?)([^ >"]+)\1/)
+        urls.push($2)
       end
     end
 
@@ -436,7 +451,7 @@ class Article < Content
   end
 
   def rss_comments(xml)
-    xml.comments(permalink_url + "#comments")
+    xml.comments(normalized_permalink_url + "#comments")
   end
 
   def link_to_author?
@@ -471,28 +486,16 @@ class Article < Content
     end
   end
 
-  def atom_content(xml)
+  def atom_content(entry)
     if self.user && self.user.name
       rss_desc = "<hr /><p><small>#{_('Original article writen by')} #{self.user.name} #{_('and published on')} <a href='#{blog.base_url}'>#{blog.blog_name}</a> | <a href='#{self.permalink_url}'>#{_('direct link to this article')}</a> | #{_('If you are reading this article elsewhere than')} <a href='#{blog.base_url}'>#{blog.blog_name}</a>, #{_('it has been illegally reproduced and without proper authorization')}.</small></p>"
     else
       rss_desc = ""
     end
-    
-    # This HTMLEntities is use to convert bad entities on dabase. We can check 
-    # some bad data insert by FCKEditor. We can found to &eacute; by exemple.
-    # If we doesn't change that, the atom feed is invalid
-    coder = HTMLEntities.new
-    post = coder.decode(html(blog.show_extended_on_rss ? :all : :body))
-    content = blog.rss_description ? post + rss_desc : post
 
-    xml.summary "type" => "xhtml" do
-      xml.div(:xmlns => "http://www.w3.org/1999/xhtml") {xml << coder.decode(html(:body)) }
-    end
-    if blog.show_extended_on_rss
-      xml.content(:type => "xhtml") do
-        xml.div(:xmlns => 'http://www.w3.org/1999/xhtml') { xml << content }
-      end
-    end
+    post = blog.show_extended_on_rss ? post = html(:all) : post = html(:body)
+    content = blog.rss_description ? post + rss_desc : post
+    entry.content(content, :type => "html")
   end
 
   def add_comment(params)
@@ -503,8 +506,8 @@ class Article < Content
     self.categorizations.build(:category => category, :is_primary => is_primary)
   end
 
-  def access_by?(user) 
-    user.admin? || user_id == user.id 
+  def access_by?(user)
+    user.admin? || user_id == user.id
   end
 
   protected
@@ -521,9 +524,9 @@ class Article < Content
   end
 
   def set_defaults
-    if self.attributes.include?("permalink") and 
-          (self.permalink.blank? or 
-          self.permalink.to_s =~ /article-draft/ or 
+    if self.attributes.include?("permalink") and
+          (self.permalink.blank? or
+          self.permalink.to_s =~ /article-draft/ or
           self.state == "draft"
     )
       self.permalink = self.stripped_title

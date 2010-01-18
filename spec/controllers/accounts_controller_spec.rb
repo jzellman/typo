@@ -6,6 +6,7 @@ describe 'A successfully authenticated login' do
   before(:each) do
     @user = mock_model(User, :new_record? => false, :reload => @user)
     @user.stub!(:profile).and_return(Profile.find_by_label('admin'))
+    @user.stub!(:update_connection_time)
     User.stub!(:authenticate).and_return(@user)
     User.stub!(:find_by_id).with(@user.id).and_return(@user)
     User.stub!(:count).and_return(1)
@@ -13,7 +14,7 @@ describe 'A successfully authenticated login' do
   end
 
   def make_request
-    post 'login', { :user_login => 'bob', :password => 'test' }
+    post 'login', {:user => {:login => 'bob', :password => 'test'}}
   end
 
   it 'session gets a user' do
@@ -24,7 +25,7 @@ describe 'A successfully authenticated login' do
 
   it 'sets typo_user_profile cookie' do
     make_request
-    cookies[:typo_user_profile].should == ['admin']
+    cookies[:typo_user_profile].should == 'admin'
   end
 
   it 'redirects to /bogus/location' do
@@ -60,7 +61,7 @@ describe 'User is inactive' do
   end
  
   def make_request
-    post 'login', { :user_login => 'inactive', :password => 'longtest' } 
+    post 'login', {:user => {:login => 'inactive', :password => 'longtest'}}
   end
   
   it 'no user in goes in the session' do
@@ -85,6 +86,23 @@ describe 'User is inactive' do
   
 end
 
+describe 'Login with nil user and password' do
+  controller_name :accounts
+
+  before(:each) do
+    User.stub!(:count).and_return(1)
+  end
+  
+  def make_request
+   post 'login', {:user => {:login => nil, :password => nil}}
+  end
+
+  it 'should render login action' do
+    make_request
+    response.should render_template(:login)
+  end
+end
+
 describe 'Login gets the wrong password' do
   controller_name :accounts
 
@@ -94,7 +112,7 @@ describe 'Login gets the wrong password' do
   end
 
   def make_request
-   post 'login', {:user_login => 'bob', :password => 'test'}
+   post 'login', {:user => {:login => 'bob', :password => 'test'}}
   end
 
   it 'no user in goes in the session' do
@@ -261,7 +279,7 @@ describe 'User is logged in' do
   it 'logging out deletes cookies containing credentials' do
     @user.should_receive(:forget_me)
     get 'logout'
-    cookies[:auth_token].should == []
-    cookies[:typo_user_profile].should == []
+    cookies[:auth_token].should == nil
+    cookies[:typo_user_profile].should == nil
   end
 end

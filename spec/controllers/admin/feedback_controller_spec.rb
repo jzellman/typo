@@ -1,4 +1,3 @@
-require File.dirname(__FILE__) + '/../../../test/test_helper'
 require File.dirname(__FILE__) + '/../../spec_helper'
 
 describe Admin::FeedbackController do
@@ -296,7 +295,7 @@ describe Admin::FeedbackController do
     describe '#bulkops action' do
 
       before :each do
-        post :bulkops, :bulkop => 'Delete all spam'
+        post :bulkops, :bulkop_top => 'Delete all spam'
       end
 
       it 'should redirect to action' do

@@ -1,6 +1,7 @@
 class XmlController < ApplicationController
-  caches_page :feed
-  session :off
+  caches_page :feed, :if => Proc.new {|c|
+    c.request.query_string == ''
+  }
 
   NORMALIZED_FORMAT_FOR = {'atom' => 'atom', 'rss' => 'rss',
     'atom10' => 'atom', 'atom03' => 'atom', 'rss20' => 'rss',
@@ -23,12 +24,12 @@ class XmlController < ApplicationController
     when 'feed'
       redirect_to :controller => 'articles', :action => 'index', :format => @format, :status => 301
     when 'comments'
-      head :moved_permanently, :location => formatted_admin_comments_url(@format)
+      head :moved_permanently, :location => admin_comments_url(:format => @format)
     when 'article'
       head :moved_permanently, :location => Article.find(params[:id]).permalink_by_format(@format)
     when 'category', 'tag', 'author'
       head :moved_permanently, \
-        :location => self.send("formatted_#{params[:type]}_url", params[:id], @format)
+        :location => self.send("#{params[:type]}_url", params[:id], :format => @format)
     else
       @items = Array.new
       @blog = this_blog
@@ -45,6 +46,7 @@ class XmlController < ApplicationController
         return
       end
 
+      # TODO: Use templates from articles controller.
       respond_to do |format|
         format.googlesitemap
         format.atom
@@ -83,7 +85,7 @@ class XmlController < ApplicationController
     if params[:format]
       params[:format] = NORMALIZED_FORMAT_FOR[params[:format]]
     else
-      params[:foramt] = 'rss'
+      params[:format] = 'rss'
     end
     return true
   end
