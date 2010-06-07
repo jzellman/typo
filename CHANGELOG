@@ -1,37 +1,28 @@
-Only 1 week after releasing Typo 5.4, we're back with another cool Typo release. Since it was fixing a major security breach, Typo 5.4 was released a bit too quickly, and we left some bugs here and there we promptly fixed. So don't expect any new feature here, it's only about bug fixing and refactoring. Apparently, Matijs and Cyril had great fun doing this. I started to work on the first Typo user's guide as in our documentation effort. The 0.1 version is provided in Typo 5.4.1. We've also upgraded every theme at Typogarden to make them 5.4.1 compliant.
+After releasing Typo 5.4.3, we realized something we actually knew for a while. If we wanted Typo to spread more, we had to make it prettier, easier to install and easier to use. That may sound obvious, but we were working with a quite old product, having legacy feature we didn't need, but, for some reason, we kept release after release, trying to work around instead of just dumping them. If we wanted to make Typo better, we first had to make it smaller. Dead obvious once again.
 
-Since we're still working on what we want to see in the next Typo, don't mind opening a ticket to ask for something you want.
+Being the fourth of the Willy Ronis series, that version is the first going towards simplification: less useless feature, simpler, better interface, and lighter memory footprint. 
 
-[#68] Atom feed has duplicated content
-There was a duplicate content in atom feed because of the use of atom:summary with extended content. Since summary is not mandatory, and it should not duplicate content, we've decided to remove it one from the feed. 
+Typo now comes with a new, easier to use setup that suppresses needed initial configuration. Just provide an email and a blog title, and you're done. This setup is the first stone in refreshing Typo installation process.
 
-[#75] <typo:code> textfilter need change all < by &lt; in atom feed
+Previous admin refresh was not very satisfying, and we needed to rework it. Instead of trying to play the webdesigners, which none of us is, we used Jquery UI for the graphic part, and focused on Typo interface instead. The result is, for now, quite satisfying, even though we know we still can improve it. 
 
-[#86] Migrations out of necessary sequence
+IPs and pattern blacklist has been completely removed. With Akismet and real time blacklist (RBL), Typo already provided 2 simple ways to fight against spam. Blacklisting IPs and patterns was a very advanced feature, which is definitely not a blogware job. If people want to do that type of filtering, they have many way to do it, using intrusion detection systems (IDS), Apache mod_security, or even packet filtering such as Linux Netfilter. 
 
-[#124] &gt; and &lt; entities are decoded in the atom feed
+For ages, Typo provided a full iTunes metadata support for podcast publishers. We've completely removed them since it was useless for 99.99% of us. Typo still supports enclosure (files attached to a blog post, appearing in the RSS feed but not on the post itself) though.
 
-[#126] Previews give an application error 
+We've also resolved a bunch of bugs as well:
 
-[#127] Changing post's title changes the permalink slug
+The main reason why we've released that new version so early was because of a bug in the visual editor, losing posts content at saving time. Editors are very difficult to test since they rely on Javascript. However, we plan to add some Watir tests in a near future.
 
-[#128] Fix typogarden themes
-Seems obvious isn't it?
+#152: fix poor email grammar.
 
-[#130] Theme editor textbox is too small
-There was actually wet paint in our new admin. We fixed that quickly.
+#148: fixes a bug that prevents admin to edit a user without providing his password.
 
-[#131] New Tags are created two times
-The way autosave on new / saved articles worked was quite complicated and ended with strange behavior.
+#160: 404 error on the lightbox loading.gif and closelabel.gif.
 
-[#132] Categories are brocken
-A typo in the category views.
+#155: after deleting an image, the file page is loaded.
 
-[#133] Installer parameter database=sqlite3 doesn't work
-Awated parameter was database=sqlite, but since this could be confusing, we've made sqlite3 avaliable as well.
-
-[#134] "Continue reading ..." link appears for posts that do not have additional content. 
-This one was actually the tree hiding the forest of all our themes being brocken because it constant renaming of the read controller and action name.
+#143: publishing posts in the future didn't work unless you manually unpublishes them.
 
 
 

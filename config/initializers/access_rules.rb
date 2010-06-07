@@ -84,6 +84,11 @@ AccessControl.map :require => [ :admin, :publisher, :contributor ]  do |map|
     project.submenu "Customize sidebar",     { :controller => "admin/sidebar", :action => "index" }
     project.submenu "Theme editor",          { :controller => "admin/themes", :action => "editor" }
     project.submenu "View theme catalogue",       { :controller => "admin/themes", :action => "catalogue" }
+    
+    AccessControl.search_plugins_directory.each do |plugin|
+      project.submenu AccessControl.get_plugin_litteral_name(plugin), 
+        { :controller => "admin/#{AccessControl.get_plugin_controller_name(plugin)}", :action => "index" }
+    end
   end
   
   map.project_module :settings, nil do |project|
@@ -92,7 +97,6 @@ AccessControl.map :require => [ :admin, :publisher, :contributor ]  do |map|
     project.submenu "Write",                 { :controller => "admin/settings", :action => "write" }
     project.submenu "Feedback",              { :controller => "admin/settings", :action => "feedback" }			
     project.submenu "SEO",                   { :controller => "admin/settings", :action => "seo" }
-    project.submenu "Blacklist",             { :controller => "admin/blacklist", :action => "index" }
     project.submenu "Users",                 { :controller => "admin/users", :action => "index" }
     project.submenu "",                 { :controller => "admin/users", :action => "show" }
     project.submenu "",                 { :controller => "admin/users", :action => "new" }

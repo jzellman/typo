@@ -210,6 +210,10 @@ a {
 
 }
 
+.comments a {
+	color: #fb7c00;
+}
+
 #external {
   position: absolute;
   top: 55px;
@@ -435,7 +439,6 @@ img.gravatar {
 }
 
 p.comment {
-  background: url('../../images/theme/bg_input.jpg') left no-repeat;
   padding: 10px 3px 0 5px;
   width: 230;
   height: 30px;
@@ -444,10 +447,14 @@ p.comment {
 #comment_author,
 #comment_email,
 #comment_url {
-  height: 20px;
+  padding: 10px 3px 0 5px;
   border: none;
   font: 13px/20px "Lucida Sans Unicode", "Lucida Grande", Arial, sans-serif;
   width: 290px;
+	border: #000 1px solid;
+	-moz-border-radius: 5px;
+	moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
 }
 
 #comment_body {
@@ -455,10 +462,13 @@ p.comment {
   font: 13px/20px "Lucida Sans Unicode", "Lucida Grande", Arial, sans-serif;	
   width: 640px;
   height: 175px;
+	border: #000 1px solid;
+	-moz-border-radius: 5px;
+	moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
 }
 
 p.body {
-  background: url('../../images/theme/textarea_bg.jpg') left no-repeat;
   padding: 10px 5px;
 }
 
@@ -552,4 +562,18 @@ a#carousel-previous {
 
 #carousel-next {
   right: 0;
+}
+
+#form-submit-button {
+	border: #d46900 1px solid;
+	background: url("../../images/theme/submit_form.jpg") bottom left repeat-x #fe9e3f;
+	color: #fff;
+	-moz-border-radius: 4px;
+	moz-border-radius: 4px;
+	border-radius: 4px;
+	-webkit-border-radius: 4px;
+	font: 14px/14px "Lucida Sans Unicode", "Lucida Grande", Arial, sans-serif;
+	text-transform: capitalize;
+	padding: 10px 15px;
+
 }

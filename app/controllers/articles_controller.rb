@@ -1,8 +1,8 @@
 class ArticlesController < ContentController
-  before_filter :verify_config
   before_filter :login_required, :only => [:preview]
   before_filter :auto_discovery_feed, :only => [:show, :index]
-
+  before_filter :verify_config
+  
   layout :theme_layout, :except => [:comment_preview, :trackback]
 
   cache_sweeper :blog_sweeper
@@ -24,7 +24,7 @@ class ArticlesController < ContentController
       @articles = Article.paginate :page => params[:page], :conditions => { :published_at => time_delta(*params.values_at(:year, :month, :day)), :published => true }, :order => 'published_at DESC', :per_page => @limit
     else
       @noindex = 1 unless params[:page].blank?
-      @articles = Article.paginate :page => params[:page], :conditions => { :published => true }, :order => 'published_at DESC', :per_page => @limit
+      @articles = Article.paginate :page => params[:page], :conditions => ['published = ? AND published_at < ?', true, Time.now], :order => 'published_at DESC', :per_page => @limit
     end
     
     @page_title = index_title
@@ -175,6 +175,8 @@ class ArticlesController < ContentController
   def view_page
     if(@page = Page.find_by_name(params[:name].map { |c| c }.join("/"))) && @page.published?
       @page_title = @page.title
+      @description = (this_blog.meta_description.empty?) ? "" : this_blog.meta_description
+      @keywords = (this_blog.meta_keywords.empty?) ? "" : this_blog.meta_keywords
     else
       render :nothing => true, :status => 404
     end
@@ -187,10 +189,10 @@ class ArticlesController < ContentController
   private
 
   def verify_config
-    if User.count == 0
+    if  ! this_blog.configured?
+      redirect_to :controller => "setup", :action => "index"
+    elsif User.count == 0
       redirect_to :controller => "accounts", :action => "signup"
-    elsif ! this_blog.configured?
-      redirect_to :controller => "admin/settings", :action => "redirect"
     else
       return true
     end
